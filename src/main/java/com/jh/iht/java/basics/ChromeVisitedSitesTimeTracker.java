@@ -4,12 +4,12 @@ import java.sql.*;
 import java.text.*;
 import java.io.*;
 
-public class VisitedSiteTimeTracker_working_good {
+public class ChromeVisitedSitesTimeTracker {
 
     public static void main(String[] args) {
         // Path to Chrome's History SQLite database file
         String dbPath = "C:\\Users\\HP\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\History";
-        String csvFilePath = "D:\\workspace\\HistoryTracker\\src\\main\\resources\\template\\browser_history13.csv";  // Output CSV file path
+        String csvFilePath = "D:\\workspace\\HistoryTracker\\src\\main\\resources\\template\\browser_history01.csv";  // Output CSV file path
 
         // Setup CSV Writer
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
