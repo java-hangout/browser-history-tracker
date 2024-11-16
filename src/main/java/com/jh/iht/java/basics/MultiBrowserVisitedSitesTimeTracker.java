@@ -27,14 +27,9 @@ public class MultiBrowserVisitedSitesTimeTracker {
             Class.forName("org.sqlite.JDBC");
 
             // Establish connection
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath)) {
-
-                // Browser-specific SQL query
-                String sql = getBrowserSQLQuery(browser);
-
-                try (PreparedStatement pstmt = conn.prepareStatement(sql);
-                     ResultSet rs = pstmt.executeQuery()) {
-
+            // Browser-specific SQL query
+            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath); PreparedStatement pstmt = conn.prepareStatement(getBrowserSQLQuery(browser));
+                 ResultSet rs = pstmt.executeQuery()) {
                     // Date format for displaying the visit time
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
                     SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
@@ -70,17 +65,11 @@ public class MultiBrowserVisitedSitesTimeTracker {
                     if (!dataFound) {
                         System.out.println("No visits found in the database.");
                     }
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -88,7 +77,6 @@ public class MultiBrowserVisitedSitesTimeTracker {
     private static String getBrowserName() {
         // Choose the browser: "chrome", "firefox", or "edge"
         Scanner scanner = new Scanner(System.in);
-
         // Prompt the user for the browser name
         System.out.print("Enter Browser Name: ");
         return scanner.nextLine().trim();
@@ -111,7 +99,6 @@ public class MultiBrowserVisitedSitesTimeTracker {
                 System.out.println("Unsupported browser. Please use chrome, firefox, or edge.");
                 break;
         }
-
         return dbPath;
     }
 
@@ -139,7 +126,6 @@ public class MultiBrowserVisitedSitesTimeTracker {
                 System.out.println("Unsupported browser. Please use chrome, firefox, or edge.");
                 break;
         }
-
         return sql;
     }
 }

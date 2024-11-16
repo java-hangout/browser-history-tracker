@@ -1,8 +1,10 @@
 package com.jh.iht.java.basics;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
-import java.text.*;
-import java.io.*;
+import java.text.SimpleDateFormat;
 
 public class ChromeVisitedSitesTimeTracker {
 
@@ -19,19 +21,9 @@ public class ChromeVisitedSitesTimeTracker {
 
             // Load the SQLite JDBC driver
             Class.forName("org.sqlite.JDBC");
-
             // Establish connection
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath)) {
-
-                // SQL query to fetch actual URL instead of ID, including the visit duration
-                String sql = "SELECT v.id, u.url, u.title, v.visit_time, v.visit_duration " +
-                        "FROM visits v " +
-                        "JOIN urls u ON v.url = u.id " +
-                        "ORDER BY v.visit_time";
-
-                try (PreparedStatement pstmt = conn.prepareStatement(sql);
-                     ResultSet rs = pstmt.executeQuery()) {
-
+            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath); PreparedStatement pstmt = conn.prepareStatement(getChromeSQLiteQuery);
+                 ResultSet rs = pstmt.executeQuery()) {
                     // Date format for displaying the visit time
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
                     SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
@@ -68,17 +60,20 @@ public class ChromeVisitedSitesTimeTracker {
                         System.out.println("No visits found in the database.");
                     }
 
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getChromeSQLiteQuery() {
+        // SQL query to fetch actual URL instead of ID, including the visit duration
+        return "SELECT v.id, u.url, u.title, v.visit_time, v.visit_duration " +
+                "FROM visits v " +
+                "JOIN urls u ON v.url = u.id " +
+                "ORDER BY v.visit_time";
     }
 }

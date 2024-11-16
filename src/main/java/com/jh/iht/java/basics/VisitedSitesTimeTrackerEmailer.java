@@ -36,14 +36,9 @@ public class VisitedSitesTimeTrackerEmailer {
             Class.forName("org.sqlite.JDBC");
 
             // Establish connection
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath)) {
-
-                // Browser-specific SQL query
-                String sql = getBrowserSQLQuery(browser);
-
-                try (PreparedStatement pstmt = conn.prepareStatement(sql);
-                     ResultSet rs = pstmt.executeQuery()) {
-
+            // Browser-specific SQL query
+            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);PreparedStatement pstmt = conn.prepareStatement(getBrowserSQLQuery(browser));
+                 ResultSet rs = pstmt.executeQuery()) {
                     // Date format for displaying the visit time
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
                     SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
@@ -80,16 +75,11 @@ public class VisitedSitesTimeTrackerEmailer {
                         System.out.println("No visits found in the database.");
                     }
 
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         // Send the email with the generated CSV file
@@ -169,8 +159,8 @@ public class VisitedSitesTimeTrackerEmailer {
         properties.setProperty("mail.smtp.auth", "true");
 
         // Authenticate the sender's email
-        String username = "contacts.veereshn@gmail.com";  // Your Gmail address
-        String password = "wkgs wpis zykx zauw";  // Your Gmail password
+        String username = "xxxxxxx@gmail.com";  // Your Gmail address
+        String password = "xxxxxxx";  // Your Gmail password
 
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
