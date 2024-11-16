@@ -22,7 +22,7 @@ public class ChromeVisitedSitesTimeTracker {
             // Load the SQLite JDBC driver
             Class.forName("org.sqlite.JDBC");
             // Establish connection
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath); PreparedStatement pstmt = conn.prepareStatement(getChromeSQLiteQuery);
+            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath); PreparedStatement pstmt = conn.prepareStatement(getChromeSQLiteQuery());
                  ResultSet rs = pstmt.executeQuery()) {
                     // Date format for displaying the visit time
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
