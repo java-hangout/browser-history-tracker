@@ -1,0 +1,323 @@
+{
+    "date": "18-11-2024",
+    "userName": "Shreyansh",
+    "browsers": [
+        {
+            "visitedSites": [
+                {
+                    "visitedDateAndTime": "2024-11-15 22:16:44",
+                    "totalTimeSpentInSeconds": 0.528016,
+                    "title": "java hangout in youtube - Google Search",
+                    "url": "https://www.google.com/search?q=java+hangout+in+youtube&oq=&gs_lcrp=EgZjaHJvbWUqCQgAECMYJxjqAjIJCAAQIxgnGOoCMgkIARAjGCcY6gIyCQgCECMYJxjqAjIJCAMQIxgnGOoCMgkIBBAjGCcY6gIyCQgFECMYJxjqAjIJCAYQIxgnGOoCMgYIBxBFGEDSAQ0yMTY0NTMxMDVqMWo3qAIHsAIB&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.008800266666666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:16:44",
+                    "totalTimeSpentInSeconds": 0.981512,
+                    "title": "java hangout in youtube - Google Search",
+                    "url": "https://www.google.com/search?q=java+hangout+in+youtube&oq=&gs_lcrp=EgZjaHJvbWUqCQgAECMYJxjqAjIJCAAQIxgnGOoCMgkIARAjGCcY6gIyCQgCECMYJxjqAjIJCAMQIxgnGOoCMgkIBBAjGCcY6gIyCQgFECMYJxjqAjIJCAYQIxgnGOoCMgYIBxBFGEDSAQ0yMTY0NTMxMDVqMWo3qAIHsAIB&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.016358533333333335
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:16:45",
+                    "totalTimeSpentInSeconds": 14.726424,
+                    "title": "Java Hangout - YouTube",
+                    "url": "https://www.youtube.com/channel/UCuCMsH8xIiXXEW23-cNRVeg",
+                    "totalTimeSpentInMinutes": 0.2454404
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:17:00",
+                    "totalTimeSpentInSeconds": 0.005638,
+                    "title": "Java Hangout - YouTube",
+                    "url": "https://www.youtube.com/channel/UCuCMsH8xIiXXEW23-cNRVeg",
+                    "totalTimeSpentInMinutes": 9.396666666666667E-5
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:17:00",
+                    "totalTimeSpentInSeconds": 201.343902,
+                    "title": "Spring Boot Microservices - What is Hystrix ? | Hystrix -Circuit Break Pattern | Hystrix Dashboard - YouTube",
+                    "url": "https://www.youtube.com/watch?v=AEZ5BKcJLKo&t=79s",
+                    "totalTimeSpentInMinutes": 3.3557317
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:04",
+                    "totalTimeSpentInSeconds": 0.511603,
+                    "title": "java hangout in youtube - Google Search",
+                    "url": "https://www.google.com/search?q=java+hangout+in+youtube&rlz=1C1CHBF_enIN1134IN1134&oq=&gs_lcrp=EgZjaHJvbWUqCQgAECMYJxjqAjIJCAAQIxgnGOoCMgkIARAjGCcY6gIyCQgCECMYJxjqAjIJCAMQIxgnGOoCMgkIBBAjGCcY6gIyCQgFECMYJxjqAjIJCAYQIxgnGOoCMgYIBxBFGEDSAQ0yMTc0MzMyNzVqMWo3qAIHsAIB&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.008526716666666666
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:05",
+                    "totalTimeSpentInSeconds": 1.527879,
+                    "title": "java hangout in youtube - Google Search",
+                    "url": "https://www.google.com/search?q=java+hangout+in+youtube&rlz=1C1CHBF_enIN1134IN1134&oq=&gs_lcrp=EgZjaHJvbWUqCQgAECMYJxjqAjIJCAAQIxgnGOoCMgkIARAjGCcY6gIyCQgCECMYJxjqAjIJCAMQIxgnGOoCMgkIBBAjGCcY6gIyCQgFECMYJxjqAjIJCAYQIxgnGOoCMgYIBxBFGEDSAQ0yMTc0MzMyNzVqMWo3qAIHsAIB&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.02546465
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:06",
+                    "totalTimeSpentInSeconds": 9.376719,
+                    "title": "Java Hangout - YouTube",
+                    "url": "https://www.youtube.com/channel/UCuCMsH8xIiXXEW23-cNRVeg",
+                    "totalTimeSpentInMinutes": 0.15627865
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:15",
+                    "totalTimeSpentInSeconds": 0.005804,
+                    "title": "Java Hangout - YouTube",
+                    "url": "https://www.youtube.com/channel/UCuCMsH8xIiXXEW23-cNRVeg",
+                    "totalTimeSpentInMinutes": 9.673333333333333E-5
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:15",
+                    "totalTimeSpentInSeconds": 12.480429,
+                    "title": "Java Hangout - YouTube",
+                    "url": "https://www.youtube.com/@javahangout4648/videos",
+                    "totalTimeSpentInMinutes": 0.20800715
+                },
+                {
+                    "visitedDateAndTime": "2024-11-15 22:33:28",
+                    "totalTimeSpentInSeconds": 420.20258,
+                    "title": "Converting Object into JSON String & JSON String into Object by using Jackson API - YouTube",
+                    "url": "https://www.youtube.com/watch?v=Bq7WBXd6gEg",
+                    "totalTimeSpentInMinutes": 7.003376333333334
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 00:14:25",
+                    "totalTimeSpentInSeconds": 0,
+                    "title": "XML Schema Part 2: Datatypes Second Edition",
+                    "url": "http://www.w3.org/TR/xmlschema-2/#string",
+                    "totalTimeSpentInMinutes": 0
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 00:14:25",
+                    "totalTimeSpentInSeconds": 358.962038,
+                    "title": "XML Schema Part 2: Datatypes Second Edition",
+                    "url": "https://www.w3.org/TR/xmlschema-2/#string",
+                    "totalTimeSpentInMinutes": 5.982700633333334
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:52:57",
+                    "totalTimeSpentInSeconds": 0.591842,
+                    "title": "chatgpt - Google Search",
+                    "url": "https://www.google.com/search?q=chatgpt&rlz=1C1CHBF_enIN1134IN1134&oq=chartgh&gs_lcrp=EgZjaHJvbWUqDAgBEAAYChixAxiABDIGCAAQRRg5MgwIARAAGAoYsQMYgAQyDAgCEAAYChixAxiABDIMCAMQABgKGLEDGIAEMgwIBBAAGAoYsQMYgAQyDAgFEAAYChixAxiABDIPCAYQABgKGIMBGLEDGIAEMg8IBxAAGAoYgwEYsQMYgAQyCQgIEAAYChiABDIPCAkQABgKGIMBGLEDGIAE0gEINzc2OWowajeoAgCwAgA&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.009864033333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:52:57",
+                    "totalTimeSpentInSeconds": 1.127927,
+                    "title": "chatgpt - Google Search",
+                    "url": "https://www.google.com/search?q=chatgpt&rlz=1C1CHBF_enIN1134IN1134&oq=chartgh&gs_lcrp=EgZjaHJvbWUqDAgBEAAYChixAxiABDIGCAAQRRg5MgwIARAAGAoYsQMYgAQyDAgCEAAYChixAxiABDIMCAMQABgKGLEDGIAEMgwIBBAAGAoYsQMYgAQyDAgFEAAYChixAxiABDIPCAYQABgKGIMBGLEDGIAEMg8IBxAAGAoYgwEYsQMYgAQyCQgIEAAYChiABDIPCAkQABgKGIMBGLEDGIAE0gEINzc2OWowajeoAgCwAgA&sourceid=chrome&ie=UTF-8",
+                    "totalTimeSpentInMinutes": 0.018798783333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:52:58",
+                    "totalTimeSpentInSeconds": 0.673693,
+                    "title": "Introducing ChatGPT | OpenAI",
+                    "url": "https://openai.com/index/chatgpt/",
+                    "totalTimeSpentInMinutes": 0.011228216666666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:52:59",
+                    "totalTimeSpentInSeconds": 2084.000953,
+                    "title": "Introducing ChatGPT | OpenAI",
+                    "url": "https://openai.com/index/chatgpt/",
+                    "totalTimeSpentInMinutes": 34.73334921666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:53:02",
+                    "totalTimeSpentInSeconds": 0.724107,
+                    "title": "ChatGPT",
+                    "url": "https://chatgpt.com/",
+                    "totalTimeSpentInMinutes": 0.01206845
+                },
+                {
+                    "visitedDateAndTime": "2024-11-16 15:53:03",
+                    "totalTimeSpentInSeconds": 2079.931022,
+                    "title": "ChatGPT",
+                    "url": "https://chatgpt.com/",
+                    "totalTimeSpentInMinutes": 34.66551703333334
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:05:40",
+                    "totalTimeSpentInSeconds": 0,
+                    "title": "Central Repository:",
+                    "url": "https://repo.maven.apache.org/maven2",
+                    "totalTimeSpentInMinutes": 0
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:05:40",
+                    "totalTimeSpentInSeconds": 18.884346,
+                    "title": "Central Repository:",
+                    "url": "https://repo.maven.apache.org/maven2/",
+                    "totalTimeSpentInMinutes": 0.3147391
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:05:59",
+                    "totalTimeSpentInSeconds": 34.822564,
+                    "title": "Central Repository: org",
+                    "url": "https://repo.maven.apache.org/maven2/org/",
+                    "totalTimeSpentInMinutes": 0.5803760666666666
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:06:34",
+                    "totalTimeSpentInSeconds": 20.586323,
+                    "title": "Central Repository:",
+                    "url": "https://repo.maven.apache.org/maven2/",
+                    "totalTimeSpentInMinutes": 0.34310538333333335
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:06:55",
+                    "totalTimeSpentInSeconds": 9.995168,
+                    "title": "Central Repository: io",
+                    "url": "https://repo.maven.apache.org/maven2/io/",
+                    "totalTimeSpentInMinutes": 0.16658613333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:07:05",
+                    "totalTimeSpentInSeconds": 8.416043,
+                    "title": "Central Repository: io/jsonwebtoken",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/",
+                    "totalTimeSpentInMinutes": 0.14026738333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:07:13",
+                    "totalTimeSpentInSeconds": 23.383318,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/",
+                    "totalTimeSpentInMinutes": 0.38972196666666664
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:07:36",
+                    "totalTimeSpentInSeconds": 273.317611,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt/0.12.6",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.12.6/",
+                    "totalTimeSpentInMinutes": 4.555293516666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:12:10",
+                    "totalTimeSpentInSeconds": 9.659535,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/",
+                    "totalTimeSpentInMinutes": 0.16099225
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:12:19",
+                    "totalTimeSpentInSeconds": 1946.37273,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt/0.12.0",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.12.0/",
+                    "totalTimeSpentInMinutes": 32.4395455
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:44:46",
+                    "totalTimeSpentInSeconds": 8.398898,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/",
+                    "totalTimeSpentInMinutes": 0.13998163333333336
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:44:54",
+                    "totalTimeSpentInSeconds": 39.077254,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt/0.9.1",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.9.1/",
+                    "totalTimeSpentInMinutes": 0.6512875666666668
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:45:33",
+                    "totalTimeSpentInSeconds": 15.721705,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/",
+                    "totalTimeSpentInMinutes": 0.26202841666666665
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:45:49",
+                    "totalTimeSpentInSeconds": 5.440412,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt/0.12.1",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.12.1/",
+                    "totalTimeSpentInMinutes": 0.09067353333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:45:54",
+                    "totalTimeSpentInSeconds": 3.930796,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/",
+                    "totalTimeSpentInMinutes": 0.06551326666666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 00:45:58",
+                    "totalTimeSpentInSeconds": 6481.0543,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt/0.12.4",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.12.4/",
+                    "totalTimeSpentInMinutes": 108.01757166666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 01:23:45",
+                    "totalTimeSpentInSeconds": 0.882785,
+                    "title": "Postman - Sign Up",
+                    "url": "https://identity.getpostman.com/client-auth/confirm?auth_challenge=67bb0923e4e3aede7f71b5f5d12be1c12950263871a35185744b202f80b6d373&auth_device=app_native&auth_device_version=11.18.0",
+                    "totalTimeSpentInMinutes": 0.014713083333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 01:23:46",
+                    "totalTimeSpentInSeconds": 0,
+                    "title": "Postman - Sign Up",
+                    "url": "https://identity.getpostman.com/client-auth/start?auth_challenge=67bb0923e4e3aede7f71b5f5d12be1c12950263871a35185744b202f80b6d373&auth_device=app_native&auth_device_version=11.18.0",
+                    "totalTimeSpentInMinutes": 0
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 01:23:46",
+                    "totalTimeSpentInSeconds": 4213.686722,
+                    "title": "Postman - Sign Up",
+                    "url": "https://identity.getpostman.com/signup?auth_challenge=67bb0923e4e3aede7f71b5f5d12be1c12950263871a35185744b202f80b6d373&auth_device=app_native&auth_device_version=11.18.0",
+                    "totalTimeSpentInMinutes": 70.22811203333335
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:27:43",
+                    "totalTimeSpentInSeconds": 0,
+                    "title": "Central Repository:",
+                    "url": "https://repo.maven.apache.org/maven2",
+                    "totalTimeSpentInMinutes": 0
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:27:43",
+                    "totalTimeSpentInSeconds": 28.418423,
+                    "title": "Central Repository:",
+                    "url": "https://repo.maven.apache.org/maven2/",
+                    "totalTimeSpentInMinutes": 0.47364038333333336
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:28:12",
+                    "totalTimeSpentInSeconds": 11.416081,
+                    "title": "Central Repository: io",
+                    "url": "https://repo.maven.apache.org/maven2/io/",
+                    "totalTimeSpentInMinutes": 0.19026801666666668
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:28:23",
+                    "totalTimeSpentInSeconds": 3.728596,
+                    "title": "Central Repository: io/jsonwebtoken",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/",
+                    "totalTimeSpentInMinutes": 0.06214326666666667
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:28:27",
+                    "totalTimeSpentInSeconds": 18.747582,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt-api",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt-api/",
+                    "totalTimeSpentInMinutes": 0.3124597
+                },
+                {
+                    "visitedDateAndTime": "2024-11-17 02:28:46",
+                    "totalTimeSpentInSeconds": 313.84842,
+                    "title": "Central Repository: io/jsonwebtoken/jjwt-api/0.11.5",
+                    "url": "https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt-api/0.11.5/",
+                    "totalTimeSpentInMinutes": 5.2308069999999995
+                }
+            ],
+            "browserName": "chrome"
+        },
+        {
+            "visitedSites": [],
+            "browserName": "edge"
+        }
+    ]
+}
