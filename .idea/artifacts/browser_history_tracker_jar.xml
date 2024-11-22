@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="browser-history-tracker:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/browser_history_tracker_jar</output-path>
+    <root id="archive" name="browser-history-tracker.jar">
+      <element id="module-output" name="browser-history-tracker" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/xerial/sqlite-jdbc/3.36.0.3/sqlite-jdbc-3.36.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/sun/activation/javax.activation/1.2.0/javax.activation-1.2.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/json/json/20210307/json-20210307.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/sun/mail/javax.mail/1.6.2/javax.mail-1.6.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

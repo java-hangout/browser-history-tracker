@@ -4,26 +4,28 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Veeresh N
- * @version 1.0
- */
 public class BrowserVisitedSitesTimeTracker {
 
-    private static final String BASE_PATH = "D:\\workspace\\HistoryTracker\\src\\main\\resources\\template\\";
+    // Base path updated to use the user's Documents folder dynamically
+    //private static final String BASE_PATH = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "BrowserHistoryReports" + File.separator;
+    private static final String BASE_PATH = getBasePathForSystem();
 
     public static void main(String[] args) {
         List<String> loggedInUsers = getLoggedInUsers();
         if (loggedInUsers != null && !loggedInUsers.isEmpty()) {
             for (String userName : loggedInUsers) {
-                System.out.println("userName : "+userName);
+                System.out.println("userName : " + userName);
                 generateVisitedSitesTimeTrackerRecord(userName);
             }
         }
@@ -87,7 +89,6 @@ public class BrowserVisitedSitesTimeTracker {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                //String user = (line.contains("\\") ? line.split("\\\\")[1] : line).trim();
                 String user = line.trim();
                 if (!user.isEmpty() && !user.equalsIgnoreCase("Console") && !loggedInUsers.contains(user)) {
                     loggedInUsers.add(user);
@@ -113,12 +114,15 @@ public class BrowserVisitedSitesTimeTracker {
         String onlyUserName = userName.contains("\\") ? userName.split("\\\\")[1] : userName;
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String folderCurrentDate = new SimpleDateFormat("ddMMMyyyy").format(new Date());
-        String path = BASE_PATH + folderCurrentDate + "\\"; 
+        String path = BASE_PATH + folderCurrentDate + File.separator;
         String jsonFileName = path + onlyUserName + "_" + timestamp + ".json";
 
         ensureDirectoryExists(path);
 
         JSONObject jsonReport = createJsonReport(userName);
+        // Get system IP address
+        String ipAddress = getSystemIpAddress();
+        jsonReport.put("ipaddress", ipAddress);
 
         // Detect installed browsers dynamically
         List<String> installedBrowsers = getInstalledBrowsers();
@@ -176,6 +180,8 @@ public class BrowserVisitedSitesTimeTracker {
     private static JSONArray getVisitedSitesForBrowser(String browserName, String userName) {
         JSONArray visitedSitesArray = new JSONArray();
         String dbPath = getBrowserHistoryPath(browserName, userName);
+        createBackupFromLatestHistory(dbPath);
+        dbPath = dbPath + "Backup";
         String query = getBrowserSQLiteQuery(browserName);
 
         if (dbPath == null || query == null) {
@@ -251,9 +257,71 @@ public class BrowserVisitedSitesTimeTracker {
 
     private static String getBrowserSQLiteQuery(String browserName) {
         return "SELECT v.id, u.url, u.title, v.visit_time, v.visit_duration " +
-               "FROM visits v " +
-               "JOIN urls u ON v.url = u.id " +
-               "WHERE DATE(datetime(v.visit_time / 1000000 - 11644473600, 'unixepoch')) = DATE('now') " +
-               "ORDER BY v.visit_time";
+                "FROM visits v " +
+                "JOIN urls u ON v.url = u.id " +
+                "WHERE DATE(datetime(v.visit_time / 1000000 - 11644473600, 'unixepoch')) = DATE('now') " +
+                "ORDER BY v.visit_time";
     }
+
+    private static String getSystemIpAddress() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = inetAddresses.nextElement();
+                    // Check if the address is not a loopback address (127.0.0.1)
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "IP Not Found";
+    }
+
+    private static String getBasePathForSystem() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String userHome = System.getProperty("user.home");
+
+        if (os.contains("win")) {
+            return userHome + File.separator + "Documents" + File.separator + "BrowserHistoryReports" + File.separator;
+        } else if (os.contains("mac") || os.contains("nix") || os.contains("nux")) {
+            return userHome + File.separator + "Documents" + File.separator + "BrowserHistoryReports" + File.separator;
+        }
+        return userHome + File.separator + "BrowserHistoryReports" + File.separator;
+    }
+
+    private static void createBackupFromLatestHistory(String historyPath) {
+        if (historyPath == null) {
+            System.err.println("History file path is null!");
+            return;
+        }
+
+        File historyFile = new File(historyPath);
+        if (historyFile.exists()) {
+            File backupFile = new File(historyPath + "Backup");
+            try {
+                copyFile(historyFile, backupFile);
+                System.out.println("Backup created: " + backupFile.getAbsolutePath());
+            } catch (IOException e) {
+                System.err.println("Error creating backup: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void copyFile(File source, File dest) throws IOException {
+        try (InputStream in = new FileInputStream(source);
+             OutputStream out = new FileOutputStream(dest)) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+        }
+    }
+
 }

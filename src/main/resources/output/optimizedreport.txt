@@ -1,0 +1,386 @@
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\BrowserUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import com.jh.iht.java.basics.optimizedreport.DatabaseUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BrowserUtils {
+
+    // This function checks for installed browsers and adds them to the list
+    public static List<String> getInstalledBrowsers() {
+        List<String> browsers = new ArrayList<>();
+        addBrowserIfExists(browsers, "chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+        addBrowserIfExists(browsers, "edge", "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
+        addBrowserIfExists(browsers, "firefox", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+        return browsers;
+    }
+
+    // This helper function adds browser to the list if the corresponding executable exists
+    public static void addBrowserIfExists(List<String> browsers, String browserName, String path) {
+        if (new File(path).exists()) {
+            browsers.add(browserName);
+        }
+    }
+
+    // This function generates the visited sites data for each browser
+    public static JSONArray getVisitedSitesForBrowser(String browserName, String userName) {
+        JSONArray visitedSitesArray = new JSONArray();
+        String dbPath = getBrowserHistoryPath(browserName, userName);
+
+        if (dbPath != null) {
+            DatabaseUtils.createBackupFromLatestHistory(dbPath);
+            dbPath += "Backup";
+            String query = getBrowserSQLiteQuery(browserName);
+
+            if (query != null) {
+                try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+                     PreparedStatement pstmt = conn.prepareStatement(query);
+                     ResultSet rs = pstmt.executeQuery()) {
+
+                    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                    while (rs.next()) {
+                        JSONObject visitedSite = new JSONObject();
+                        long visitTime = rs.getLong("visit_time");
+                        String url = rs.getString("url");
+                        String title = rs.getString("title");
+                        long visitDuration = rs.getLong("visit_duration");
+
+                        long timestampMillis = (visitTime - 11644473600000000L) / 1000; // Convert to timestamp
+                        String visitedDateTime = dateFormatter.format(new java.util.Date(timestampMillis));
+                        double totalTimeSpentInMinutes = (visitDuration / 1_000_000.0) / 60;
+
+                        visitedSite.put("title", title);
+                        visitedSite.put("url", url);
+                        visitedSite.put("visitedDateAndTime", visitedDateTime);
+                        visitedSite.put("totalTimeSpentInSeconds", visitDuration / 1_000_000.0);
+                        visitedSite.put("totalTimeSpentInMinutes", totalTimeSpentInMinutes);
+
+                        visitedSitesArray.put(visitedSite);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return visitedSitesArray;
+    }
+
+    // Get browser history path based on the browser name
+    private static String getBrowserHistoryPath(String browserName, String userName) {
+        String userHome = System.getProperty("user.home");
+        String os = System.getProperty("os.name").toLowerCase();
+
+        switch (browserName.toLowerCase()) {
+            case "chrome":
+                return getBrowserHistoryPathForChrome(userHome, os);
+            case "edge":
+                return getBrowserHistoryPathForEdge(userHome, os);
+            case "firefox":
+                return getBrowserHistoryPathForFirefox(userHome, os);
+            default:
+                return null;
+        }
+    }
+
+    // Get path for Chrome browser history
+    private static String getBrowserHistoryPathForChrome(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\History";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Google/Chrome/Default/History";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.config/google-chrome/Default/History";
+        }
+        return null;
+    }
+
+    // Get path for Edge browser history
+    private static String getBrowserHistoryPathForEdge(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\History";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Microsoft Edge/Default/History";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.config/microsoft-edge/Default/History";
+        }
+        return null;
+    }
+
+    // Get path for Firefox browser history
+    private static String getBrowserHistoryPathForFirefox(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\default\\places.sqlite";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Firefox/Profiles/default/places.sqlite";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.mozilla/firefox/default/places.sqlite";
+        }
+        return null;
+    }
+
+    // Query to retrieve visit details from browser history SQLite DB
+    private static String getBrowserSQLiteQuery(String browserName) {
+        if (browserName.equalsIgnoreCase("chrome") || browserName.equalsIgnoreCase("edge")) {
+            return "SELECT v.id, u.url, u.title, v.visit_time, v.visit_duration " +
+                    "FROM visits v " +
+                    "JOIN urls u ON v.url = u.id " +
+                    "WHERE DATE(datetime(v.visit_time / 1000000 - 11644473600, 'unixepoch')) = DATE('now') " +
+                    "ORDER BY v.visit_time";
+        }
+        // For Firefox, we assume places.sqlite has 'moz_places' table
+        if (browserName.equalsIgnoreCase("firefox")) {
+            return "SELECT moz_places.url, moz_places.title, moz_historyvisits.visit_date " +
+                    "FROM moz_places " +
+                    "JOIN moz_historyvisits ON moz_places.id = moz_historyvisits.place_id " +
+                    "WHERE DATE(datetime(moz_historyvisits.visit_date / 1000, 'unixepoch')) = DATE('now')";
+        }
+        return null;
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\DatabaseUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+public class DatabaseUtils {
+
+    // This function backs up the current browser history to a new file
+    public static void createBackupFromLatestHistory(String dbPath) {
+        try {
+            File originalHistory = new File(dbPath);
+            if (originalHistory.exists()) {
+                Path backupPath = Paths.get(dbPath + "Backup");
+                Files.copy(originalHistory.toPath(), backupPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Backup created: " + backupPath);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\FileUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import org.json.JSONObject;
+
+import java.io.*;
+
+public class FileUtils {
+
+    public static void ensureDirectoryExists(String path) {
+        File directory = new File(path);
+        if (!directory.exists() && directory.mkdirs()) {
+            System.out.println("Directory created: " + directory.getPath());
+        }
+    }
+
+    public static void writeJsonToFile(String filePath, JSONObject jsonReport) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write(jsonReport.toString(4));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\JsonUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class JsonUtils {
+
+    public static JSONObject createJsonReport(String userName) {
+        JSONObject jsonReport = new JSONObject();
+        String currentDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        jsonReport.put("userName", userName);
+        jsonReport.put("date", currentDate);
+        return jsonReport;
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\MultiBrowserVisitedSitesTimeTracker.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+
+public class MultiBrowserVisitedSitesTimeTracker {
+
+    private static final String BASE_PATH = getBasePathForSystem();
+
+    public static void main(String[] args) {
+        List<String> loggedInUsers = SystemUtils.getLoggedInUsers();
+        if (!loggedInUsers.isEmpty()) {
+            loggedInUsers.forEach(userName -> {
+                System.out.println("Processing user: " + userName);
+                generateVisitedSitesTimeTrackerRecord(userName);
+            });
+        }
+    }
+
+    private static void generateVisitedSitesTimeTrackerRecord(String userName) {
+        String onlyUserName = userName.contains("\\") ? userName.split("\\\\")[1] : userName;
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String folderCurrentDate = new SimpleDateFormat("ddMMMyyyy").format(new Date());
+        String path = BASE_PATH + folderCurrentDate + File.separator;
+        String jsonFileName = path + onlyUserName + "_" + timestamp + ".json";
+
+        FileUtils.ensureDirectoryExists(path);
+
+        JSONObject jsonReport = JsonUtils.createJsonReport(userName);
+        jsonReport.put("ipaddress", NetworkUtils.getSystemIpAddress());
+
+        // Dynamically detect installed browsers
+        List<String> installedBrowsers = BrowserUtils.getInstalledBrowsers();
+        JSONArray browsersArray = new JSONArray();
+
+        installedBrowsers.forEach(browser -> {
+            JSONObject browserData = new JSONObject();
+            browserData.put("browserName", browser);
+            JSONArray visitedSitesArray = BrowserUtils.getVisitedSitesForBrowser(browser, userName);
+            browserData.put("visitedSites", visitedSitesArray);
+            browsersArray.put(browserData);
+        });
+
+        jsonReport.put("browsers", browsersArray);
+        FileUtils.writeJsonToFile(jsonFileName, jsonReport);
+    }
+
+    private static String getBasePathForSystem() {
+        return System.getProperty("user.home") + File.separator + "Documents" + File.separator + "BrowserHistoryReports" + File.separator;
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\NetworkUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
+public class NetworkUtils {
+
+    public static String getSystemIpAddress() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = inetAddresses.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "IP Not Found";
+    }
+}
+
+### Contents of D:\workspace\HistoryTracker\src\main\java\com\jh\iht\java\basics\optimizedreport\SystemUtils.java ###
+package com.jh.iht.java.basics.optimizedreport;
+
+import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+public class SystemUtils {
+
+    public static List<String> getLoggedInUsers() {
+        List<String> loggedInUsers = new ArrayList<>();
+        String os = System.getProperty("os.name").toLowerCase();
+
+        try {
+            if (os.contains("win")) {
+                getLoggedInUsersWindows(loggedInUsers);
+            } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
+                getLoggedInUsersUnix(loggedInUsers);
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return loggedInUsers;
+    }
+
+    private static void getLoggedInUsersWindows(List<String> loggedInUsers) throws IOException, InterruptedException {
+        executeCommand("powershell.exe Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty UserName", loggedInUsers);
+    }
+
+    private static void getLoggedInUsersUnix(List<String> loggedInUsers) throws IOException, InterruptedException {
+        executeCommand("who", loggedInUsers);
+    }
+
+    private static void executeCommand(String command, List<String> loggedInUsers) throws IOException, InterruptedException {
+        Process process = Runtime.getRuntime().exec(command);
+
+        Thread outputThread = new Thread(() -> processOutput(loggedInUsers, process.getInputStream()));
+        Thread errorThread = new Thread(() -> processError(process.getErrorStream()));
+
+        outputThread.start();
+        errorThread.start();
+
+        if (!process.waitFor(10, TimeUnit.SECONDS)) {
+            System.err.println("Process timed out!");
+            process.destroy();
+        }
+
+        outputThread.join();
+        errorThread.join();
+    }
+
+    private static void processOutput(List<String> loggedInUsers, InputStream inputStream) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String user = line.trim();
+                if (!user.isEmpty() && !user.equalsIgnoreCase("Console") && !loggedInUsers.contains(user)) {
+                    loggedInUsers.add(user);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void processError(InputStream errorStream) {
+        try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream))) {
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                System.err.println("Error: " + errorLine);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+

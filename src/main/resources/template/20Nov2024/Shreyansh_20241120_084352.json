@@ -1,0 +1,58 @@
+{
+    "date": "20-11-2024",
+    "ipaddress": "192.168.0.105",
+    "userName": "DESKTOP-TCU61U2\\Shreyansh",
+    "browsers": [
+        {
+            "visitedSites": [],
+            "browserName": "chrome"
+        },
+        {
+            "visitedSites": [
+                {
+                    "visitedDateAndTime": "2024-11-20 08:33:50",
+                    "totalTimeSpentInSeconds": 5,
+                    "title": "Microsoft Copilot: Your AI companion",
+                    "url": "https://copilot.microsoft.com/?dpwa=1",
+                    "totalTimeSpentInMinutes": 0.08333333333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-20 08:42:21",
+                    "totalTimeSpentInSeconds": 53.512754,
+                    "title": "YouTube",
+                    "url": "https://www.youtube.com/",
+                    "totalTimeSpentInMinutes": 0.8918792333333333
+                },
+                {
+                    "visitedDateAndTime": "2024-11-20 08:43:14",
+                    "totalTimeSpentInSeconds": 0.010508,
+                    "title": "YouTube",
+                    "url": "https://www.youtube.com/",
+                    "totalTimeSpentInMinutes": 1.7513333333333333E-4
+                },
+                {
+                    "visitedDateAndTime": "2024-11-20 08:43:14",
+                    "totalTimeSpentInSeconds": 15.371374,
+                    "title": "LIVE: కార్తీక పంచమి + బుధవారం కాణిపాక వినాయక లైవ్ దర్శనం | Kanipaka Vinayaka Live Darshan - YouTube",
+                    "url": "https://www.youtube.com/watch?v=FRPbkiLSnPQ",
+                    "totalTimeSpentInMinutes": 0.25618956666666665
+                },
+                {
+                    "visitedDateAndTime": "2024-11-20 08:43:30",
+                    "totalTimeSpentInSeconds": 5.006826,
+                    "title": "LIVE: కార్తీకమాసం బుధవారం ఉదయాన్నే ఒక్కసారి వింటే..| Lord Shiva Special | Karthika Masam 2024 - YouTube",
+                    "url": "https://www.youtube.com/watch?v=RP0SsC5lfZ8",
+                    "totalTimeSpentInMinutes": 0.08344710000000001
+                },
+                {
+                    "visitedDateAndTime": "2024-11-20 08:43:35",
+                    "totalTimeSpentInSeconds": 5,
+                    "title": "LIVE: బుధవారం ఉదయం ఈ వినాయకుని పాటలు వింటే చాలు మధ్యాహ్నానికి శుభవార్త వింటారు | Lord Ganesha Songs - YouTube",
+                    "url": "https://www.youtube.com/watch?v=bRDMuTJHth4",
+                    "totalTimeSpentInMinutes": 0.08333333333333333
+                }
+            ],
+            "browserName": "edge"
+        }
+    ]
+}
