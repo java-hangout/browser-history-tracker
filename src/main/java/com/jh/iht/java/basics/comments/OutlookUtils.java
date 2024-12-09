@@ -39,7 +39,7 @@ public class OutlookUtils {
 
         // Set up the mail server properties for Outlook SMTP
         Properties properties = System.getProperties();
-        properties.setProperty("mail.smtp.host", "smtp.office365.com");  // Outlook SMTP server
+        properties.setProperty("mail.smtp.host", "smtp.office365.com");  //devsmtp.osb.co.uk -- Outlook SMTP server
         properties.setProperty("mail.smtp.port", "587");  // Port number for Outlook SMTP
         properties.setProperty("mail.smtp.starttls.enable", "true");  // Enable STARTTLS
         properties.setProperty("mail.smtp.auth", "true");  // Enable authentication

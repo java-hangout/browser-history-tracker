@@ -1,0 +1,1060 @@
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\BrowserUtils.java ###
+package com.jh.wat;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This class contains utility methods for interacting with the user's browser history.
+ * It identifies the installed browsers, retrieves visited site data from each browser's history,
+ * and formats the data for further processing or reporting.
+ */
+public class BrowserUtils {
+
+    /**
+     * Checks for the installed browsers (Chrome, Edge, Firefox) and adds them to the list.
+     * 
+     * @return List of installed browser names.
+     */
+    public static List<String> getInstalledBrowsers() {
+        List<String> browsers = new ArrayList<>();
+        addBrowserIfExists(browsers, "chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+        addBrowserIfExists(browsers, "edge", "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
+        addBrowserIfExists(browsers, "firefox", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+        return browsers;
+    }
+
+    /**
+     * Helper method to check if a browser's executable exists on the system. 
+     * If it exists, the browser name is added to the list.
+     * 
+     * @param browsers List of browsers to add to.
+     * @param browserName The name of the browser to check.
+     * @param path The path where the browser executable is expected to be.
+     */
+    public static void addBrowserIfExists(List<String> browsers, String browserName, String path) {
+        if (new File(path).exists()) {
+            browsers.add(browserName);
+        }
+    }
+
+    /**
+     * Retrieves the list of visited sites from the browser history for a given browser and user.
+     * It connects to the browser's SQLite database and queries the history.
+     * 
+     * @param browserName The name of the browser (e.g., Chrome, Firefox, Edge).
+     * @param userName The username for which we want to retrieve the visited sites.
+     * @return A JSONArray containing the visited sites data for the given browser.
+     */
+    public static JSONArray getVisitedSitesForBrowser(String browserName, String userName) {
+        JSONArray visitedSitesArray = new JSONArray();
+        String dbPath = getBrowserHistoryPath(browserName, userName);
+
+        // If the browser history database path exists, continue processing
+        if (dbPath != null) {
+            DatabaseUtils.createBackupFromLatestHistory(dbPath);  // Backup the latest browser history
+            dbPath += "Backup";  // Use the backup file for querying history
+            String query = getBrowserSQLiteQuery(browserName);
+
+            // If a valid query is found for the browser, proceed with querying the database
+            if (query != null) {
+                try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+                     PreparedStatement pstmt = conn.prepareStatement(query);
+                     ResultSet rs = pstmt.executeQuery()) {
+
+                    SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
+
+                    // Process each result from the query and create a JSON object for each visited site
+                    while (rs.next()) {
+                        JSONObject visitedSite = new JSONObject();
+                        long visitTime = rs.getLong("visit_time");
+                        String url = rs.getString("url");
+                        String title = rs.getString("title");
+                        long visitDuration = rs.getLong("visit_duration");
+
+                        // Convert visit time from raw format to a readable timestamp
+                        long timestampMillis = (visitTime - 11644473600000000L) / 1000;
+//                        String visitedDateTime = dateFormatter.format(new java.util.Date(timestampMillis));
+                        String visitedTime = dateFormatter.format(new java.util.Date(timestampMillis));
+                        double totalTimeSpentInMinutes = (visitDuration / 1_000_000.0) / 60;
+
+                        // Populate the JSON object with visit details
+                        visitedSite.put("title", title);
+                        visitedSite.put("url", url);
+//                        visitedSite.put("visitedDateAndTime", visitedDateTime);
+                        visitedSite.put("visitedTime", visitedTime);
+//                        visitedSite.put("totalTimeSpentInSeconds", visitDuration / 1_000_000.0);
+                        visitedSite.put("totalTimeSpentInMinutes", totalTimeSpentInMinutes);
+
+                        visitedSitesArray.put(visitedSite);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();  // Handle database errors
+                }
+            }
+        }
+        return visitedSitesArray;
+    }
+
+    /**
+     * Gets the path to the browser's history database based on the browser type and the user's home directory.
+     * 
+     * @param browserName The name of the browser (e.g., Chrome, Firefox, Edge).
+     * @param userName The username to get the history for.
+     * @return The path to the browser's history database, or null if not found.
+     */
+    private static String getBrowserHistoryPath(String browserName, String userName) {
+        String userHome = System.getProperty("user.home");
+        String os = System.getProperty("os.name").toLowerCase();
+
+        // Return the appropriate history path based on the browser and operating system
+        switch (browserName.toLowerCase()) {
+            case "chrome":
+                return getBrowserHistoryPathForChrome(userHome, os);
+            case "edge":
+                return getBrowserHistoryPathForEdge(userHome, os);
+            case "firefox":
+                return getBrowserHistoryPathForFirefox(userHome, os);
+            default:
+                return null;  // Return null if the browser is unsupported
+        }
+    }
+
+    /**
+     * Gets the path to the Chrome browser history based on the operating system.
+     * 
+     * @param userHome The user's home directory.
+     * @param os The operating system name (e.g., Windows, Mac, Linux).
+     * @return The path to the Chrome history database, or null if not found.
+     */
+    private static String getBrowserHistoryPathForChrome(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\History";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Google/Chrome/Default/History";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.config/google-chrome/Default/History";
+        }
+        return null;
+    }
+
+    /**
+     * Gets the path to the Microsoft Edge browser history based on the operating system.
+     * 
+     * @param userHome The user's home directory.
+     * @param os The operating system name (e.g., Windows, Mac, Linux).
+     * @return The path to the Edge history database, or null if not found.
+     */
+    private static String getBrowserHistoryPathForEdge(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\History";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Microsoft Edge/Default/History";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.config/microsoft-edge/Default/History";
+        }
+        return null;
+    }
+
+    /**
+     * Gets the path to the Firefox browser history based on the operating system.
+     * 
+     * @param userHome The user's home directory.
+     * @param os The operating system name (e.g., Windows, Mac, Linux).
+     * @return The path to the Firefox history database, or null if not found.
+     */
+    private static String getBrowserHistoryPathForFirefox(String userHome, String os) {
+        if (os.contains("win")) {
+            return userHome + "\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\default\\places.sqlite";
+        } else if (os.contains("mac")) {
+            return userHome + "/Library/Application Support/Firefox/Profiles/default/places.sqlite";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            return userHome + "/.mozilla/firefox/default/places.sqlite";
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the appropriate SQL query to fetch the visited sites data from the browser's history database.
+     * 
+     * @param browserName The name of the browser (e.g., Chrome, Firefox, Edge).
+     * @return The SQL query to retrieve the visited sites, or null if the browser is unsupported.
+     */
+    private static String getBrowserSQLiteQuery(String browserName) {
+        if (browserName.equalsIgnoreCase("chrome") || browserName.equalsIgnoreCase("edge")) {
+            return "SELECT v.id, u.url, u.title, v.visit_time, v.visit_duration " +
+                    "FROM visits v " +
+                    "JOIN urls u ON v.url = u.id " +
+                    "WHERE DATE(datetime(v.visit_time / 1000000 - 11644473600, 'unixepoch')) = DATE('now') " +
+                    "ORDER BY v.visit_time";
+        }
+        // For Firefox, we assume places.sqlite has 'moz_places' table
+        if (browserName.equalsIgnoreCase("firefox")) {
+            return "SELECT moz_places.url, moz_places.title, moz_historyvisits.visit_date " +
+                    "FROM moz_places " +
+                    "JOIN moz_historyvisits ON moz_places.id = moz_historyvisits.place_id " +
+                    "WHERE DATE(datetime(moz_historyvisits.visit_date / 1000, 'unixepoch')) = DATE('now')";
+        }
+        return null;  // Return null if the browser does not match known types
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\DatabaseUtils.java ###
+package com.jh.wat;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
+/**
+ * This utility class contains methods for interacting with browser history databases.
+ * Specifically, it provides functionality to create backups of browser history files.
+ */
+public class DatabaseUtils {
+
+    /**
+     * Creates a backup of the current browser history file by copying it to a new location with a "Backup" suffix.
+     * If the original file exists, the backup is created; otherwise, no action is taken.
+     * 
+     * @param dbPath The path to the browser history database file.
+     */
+    public static void createBackupFromLatestHistory(String dbPath) {
+        try {
+            // Create a File object from the provided database path
+            File originalHistory = new File(dbPath);
+            
+            // Check if the original history file exists
+            if (originalHistory.exists()) {
+                // Create the backup path by appending "Backup" to the original file name
+                Path backupPath = Paths.get(dbPath + "Backup");
+                
+                // Copy the original file to the backup path, replacing any existing backup file
+                Files.copy(originalHistory.toPath(), backupPath, StandardCopyOption.REPLACE_EXISTING);
+                
+                // Print a confirmation message after successful backup creation
+                System.out.println("Backup created: " + backupPath);
+            }
+        } catch (IOException e) {
+            // Print any IO exceptions that occur during the backup process
+            e.printStackTrace();
+        }
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\FileUtils.java ###
+package com.jh.wat;
+
+import org.json.JSONObject;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * This utility class provides methods for file operations such as ensuring a directory exists
+ * and writing a JSON report to a file.
+ */
+public class FileUtils {
+
+    /**
+     * Ensures that the specified directory exists. If the directory does not exist,
+     * it attempts to create it. If the directory creation is successful, a confirmation
+     * message is printed.
+     *
+     * @param path The path to the directory to check or create.
+     */
+    public static void ensureDirectoryExists(String path) {
+        // Create a File object for the given directory path
+        File directory = new File(path);
+        
+        // Check if the directory does not exist and attempt to create it
+        if (!directory.exists() && directory.mkdirs()) {
+            // If directory creation is successful, print the directory path
+            System.out.println("Directory created: " + directory.getPath());
+        }
+    }
+
+    /**
+     * Writes a JSON report to a file at the specified path.
+     * The JSON object is pretty-printed with an indentation of 4 spaces.
+     *
+     * @param filePath  The path where the JSON file will be saved.
+     * @param jsonReport The JSON object to write to the file.
+     */
+    public static void writeJsonToFile(String filePath, JSONObject jsonReport) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            // Write the pretty-printed JSON content to the file
+            writer.write(jsonReport.toString(4));
+        } catch (IOException e) {
+            // Print any exceptions that occur during the file writing process
+            e.printStackTrace();
+        }
+    }
+    public static void writeCsvToFile(String filePath, List<String[]> data) {
+        System.out.println("Writing data into CSV file...");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (String[] row : data) {
+                writer.write(String.join(",", row));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\GmailUtils.java ###
+package com.jh.wat;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * This utility class is responsible for sending emails via Gmail with an attachment.
+ * It provides a method to compose an email with a report and send it to a specified recipient.
+ */
+public class GmailUtils {
+
+    /**
+     * This method sends an email with an attachment to a recipient.
+     * It creates a message with a subject, a body, and a file attachment,
+     * and then sends the email using Gmail's SMTP server.
+     *
+     * @param filePath   The path of the file to be attached to the email.
+     * @param systemName The name of the user, used to personalize the email subject and body.
+     */
+    public static void sendGmailWithAttachment(String filePath, String systemName) {
+        System.out.println("systemName  ---> " + systemName);
+        System.out.println("filePath  ---> " + filePath);
+
+        // Check if the file exists and has content
+        File file = new File(filePath);
+        if (!file.exists() || file.length() == 0) {
+            System.out.println("Error: The attachment file is either missing or empty.");
+            return;
+        }
+
+        // Load SMTP settings from the properties file
+        Properties properties = loadEmailProperties();
+
+        // Get the sender email and password from the properties
+        String senderGmailId = properties.getProperty("sender.email");
+        String senderGmailPW = properties.getProperty("sender.password");
+        String recipientEmail = properties.getProperty("recipient.email");
+        String subjectPrefix = properties.getProperty("subject.prefix");
+        String emailBodyTemplate = properties.getProperty("body.text");
+
+        // Set up the mail server properties
+        properties.setProperty("mail.smtp.host", properties.getProperty("smtp.host"));
+        properties.setProperty("mail.smtp.port", properties.getProperty("smtp.port"));
+        properties.setProperty("mail.smtp.starttls.enable", properties.getProperty("smtp.starttls.enable"));
+        properties.setProperty("mail.smtp.auth", properties.getProperty("smtp.auth"));
+
+        // Authenticate the sender's email
+        Session session = Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(senderGmailId, senderGmailPW);
+            }
+        });
+
+        try {
+            // Create the email content
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(senderGmailId));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            message.setSubject(subjectPrefix + " " + systemName);
+
+            // Create the message body part
+            BodyPart messageBodyPart = new MimeBodyPart();
+
+            // Replace {recipient} placeholder with recipient email prefix
+            String emailBody = emailBodyTemplate.replace("{recipient}", recipientEmail.split("@")[0]);
+
+            messageBodyPart.setText(emailBody);
+
+            // Create the attachment part
+            MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+            DataSource source = new FileDataSource(filePath);
+            attachmentBodyPart.setDataHandler(new DataHandler(source));
+            attachmentBodyPart.setFileName("Web_activity_tracker_report_" + systemName + ".csv");
+
+            // Combine the body and the attachment
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(messageBodyPart);
+            multipart.addBodyPart(attachmentBodyPart);
+
+            // Set the content of the message
+            message.setContent(multipart);
+
+            // Send the email
+            Transport.send(message);
+            System.out.println("Email sent successfully!");
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Loads email configurations (SMTP settings, sender details, etc.) from the properties file.
+     *
+     * @return Properties object containing the loaded configurations.
+     */
+    private static Properties loadEmailProperties() {
+        Properties properties = new Properties();
+        try {
+            String filePath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "emailConfig.properties";
+            System.out.println("filePath " + filePath);
+            File file = new File(filePath);
+            if (!file.exists()) {
+                System.out.println("Error: File not found at " + filePath);
+                return properties; // Return empty properties if file is missing
+            }
+
+            FileInputStream inputStream = new FileInputStream(file);
+            properties.load(inputStream);
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("General Exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return properties;
+    }
+
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\JsonUtils.java ###
+package com.jh.wat;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class JsonUtils {
+
+    public static JSONObject createJsonReport(String userName) {
+        JSONObject jsonReport = new JSONObject();
+
+        // Get the current date in the format "dd-MM-yyyy"
+        String currentDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        // Add user name and date to the JSON
+//        jsonReport.put("userName", userName);
+        jsonReport.put("date", currentDate);
+        // Add systemName and IP address to the JSON report
+        jsonReport.put("systemName", NetworkUtils.getSystemName());  // Fetch system name
+        jsonReport.put("ipaddress", NetworkUtils.getSystemIpAddress());  // Fetch IP address
+
+        return jsonReport;
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\JsonUtils_01_Working.java ###
+package com.jh.wat;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * This utility class provides methods to generate JSON reports.
+ * It can create a JSON object containing user information and the current date.
+ */
+public class JsonUtils_01_Working {
+
+    /**
+     * This method creates a JSON report for a given user, including their username and the current date.
+     *
+     * @param userName The name of the user for whom the report is being created.
+     * @return A JSONObject containing the user's name and the current date.
+     */
+    public static JSONObject createJsonReport(String userName) {
+        JSONObject jsonReport = new JSONObject();
+        // Get the current date in the format "dd-MM-yyyy"
+        String currentDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+        jsonReport.put("userName", userName);
+        jsonReport.put("date", currentDate);
+        return jsonReport;
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\NetworkUtils.java ###
+package com.jh.wat;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
+/**
+ * This class provides utility methods for network-related operations, such as retrieving the system's IP address.
+ */
+public class NetworkUtils {
+
+    /**
+     * Retrieves the system's local IP address. It iterates through all available network interfaces 
+     * and returns the first non-loopback IPv4 address found.
+     *
+     * @return The local IP address of the system as a string, or "IP Not Found" if no valid IP is found.
+     */
+    public static String getSystemIpAddress() {
+        try {
+            // Get all network interfaces on the system
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            // Iterate through each network interface
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                // Get the IP addresses associated with the network interface
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                // Iterate through each IP address
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = inetAddresses.nextElement();
+                    // Skip loopback addresses (127.0.0.1) and select the first IPv4 address
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
+                        return inetAddress.getHostAddress();  // Return the system's IP address
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();  // Print the error if there is an issue retrieving network interfaces
+        }
+        return "IP Not Found";  // Return this if no valid IP address was found
+    }
+    public static String getSystemName(){
+        // Get the system name (hostname)
+        // Fetch system name
+        return System.getenv("COMPUTERNAME");
+    }
+
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\OutlookUtils.java ###
+package com.jh.wat;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * This class contains utility methods for sending emails via Outlook (Office 365 SMTP)
+ * with an attachment, such as sending browser history reports.
+ */
+public class OutlookUtils {
+
+    /**
+     * Sends an email with the specified attachment to a recipient via Outlook's SMTP server.
+     * The email includes a customized subject and body, with the attachment being the provided file.
+     *
+     * @param filePath The path to the attachment file to be sent in the email.
+     * @param userName The user name to be used in the email body and subject.
+     */
+    public static void sendOutlookWithAttachment(String filePath, String userName) {
+        System.out.println("filePath  ---> " + filePath);
+
+        // Check if the file exists and has content
+        File file = new File(filePath);
+        if (!file.exists() || file.length() == 0) {
+            System.out.println("Error: The attachment file is either missing or empty.");
+            return;
+        }
+
+        // Load SMTP settings and email details from the properties file
+        Properties properties = loadEmailProperties();
+
+        // Extract email details
+        String senderOutlookId = properties.getProperty("sender.email");
+        String senderOutlookPW = properties.getProperty("sender.password");
+        String recipientEmail = properties.getProperty("recipient.email");
+        String subjectPrefix = properties.getProperty("subject.prefix");
+        String emailBodyTemplate = properties.getProperty("body.text");
+
+        // Set up the mail server properties for Outlook SMTP
+        properties.setProperty("mail.smtp.host", properties.getProperty("smtp.host"));
+        properties.setProperty("mail.smtp.port", properties.getProperty("smtp.port"));
+        properties.setProperty("mail.smtp.starttls.enable", properties.getProperty("smtp.starttls.enable"));
+        properties.setProperty("mail.smtp.auth", properties.getProperty("smtp.auth"));
+
+        // Create a session with authentication
+        Session session = Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(senderOutlookId, senderOutlookPW);
+            }
+        });
+
+        try {
+            // Create the email content
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(senderOutlookId));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            message.setSubject(subjectPrefix + " for " + userName);
+
+            // Create the message body part
+            BodyPart messageBodyPart = new MimeBodyPart();
+
+            // Replace placeholder {recipient} with the actual recipient name (without domain)
+            String emailPrefix = recipientEmail.split("@")[0];
+            String emailBody = emailBodyTemplate.replace("{recipient}", emailPrefix);
+
+            messageBodyPart.setText(emailBody);
+
+            // Create the attachment part
+            MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+            DataSource source = new FileDataSource(filePath);
+            attachmentBodyPart.setDataHandler(new DataHandler(source));
+            attachmentBodyPart.setFileName("Web_activity_tracker_report_" + userName + ".csv");
+
+            // Combine the body and the attachment
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(messageBodyPart);
+            multipart.addBodyPart(attachmentBodyPart);
+
+            // Set the content of the message
+            message.setContent(multipart);
+
+            // Send the email
+            Transport.send(message);
+            System.out.println("Email sent successfully!");
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Loads email configurations (SMTP settings, sender details, etc.) from the properties file.
+     * The properties file is located under the "Documents" folder.
+     *
+     * @return Properties object containing the loaded configurations.
+     */
+    private static Properties loadEmailProperties() {
+        Properties properties = new Properties();
+        try {
+            // Get the file path of the properties file from the "Documents" folder
+            String userHome = System.getProperty("user.home");
+            String filePath = userHome + File.separator + "Documents" + File.separator + "outLookEmailConfig.properties";
+
+            File file = new File(filePath);
+            if (!file.exists()) {
+                System.out.println("Error: File not found at " + filePath);
+                return properties; // Return empty properties if file is missing
+            }
+
+            // Load the properties from the file
+            FileInputStream inputStream = new FileInputStream(file);
+            properties.load(inputStream);
+
+        } catch (IOException e) {
+            System.out.println("Error loading email properties file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return properties;
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\SystemUtils.java ###
+package com.jh.wat;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Utility class for system-related functions, such as retrieving the list of logged-in users
+ * on the machine depending on the operating system (Windows or Unix-based).
+ */
+public class SystemUtils {
+
+    /**
+     * Retrieves the list of currently logged-in users depending on the operating system.
+     * It executes appropriate system commands to fetch this information based on whether
+     * the system is running Windows or Unix-based (Linux, Mac).
+     * 
+     * @return A list of logged-in user names.
+     */
+    public static List<String> getLoggedInUsers() {
+        List<String> loggedInUsers = new ArrayList<>();
+        String os = System.getProperty("os.name").toLowerCase();  // Get the OS name
+
+        try {
+            // Check the OS and call the corresponding method to get logged-in users
+            if (os.contains("win")) {
+                getLoggedInUsersWindows(loggedInUsers);  // For Windows
+            } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
+                getLoggedInUsersUnix(loggedInUsers);  // For Unix-like systems (Linux, macOS)
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return loggedInUsers;  // Return the list of logged-in users
+    }
+
+    /**
+     * Retrieves the list of logged-in users on a Windows machine by executing a PowerShell command.
+     * The command queries the system for the current logged-in user.
+     * 
+     * @param loggedInUsers A list to which the logged-in users will be added.
+     * @throws IOException If an I/O error occurs while executing the command.
+     * @throws InterruptedException If the process is interrupted while waiting.
+     */
+    private static void getLoggedInUsersWindows(List<String> loggedInUsers) throws IOException, InterruptedException {
+        // Execute PowerShell command to get the logged-in user on Windows
+        executeCommand("powershell.exe Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty UserName", loggedInUsers);
+    }
+
+    /**
+     * Retrieves the list of logged-in users on a Unix-based machine (Linux, macOS) by executing the "who" command.
+     * 
+     * @param loggedInUsers A list to which the logged-in users will be added.
+     * @throws IOException If an I/O error occurs while executing the command.
+     * @throws InterruptedException If the process is interrupted while waiting.
+     */
+    private static void getLoggedInUsersUnix(List<String> loggedInUsers) throws IOException, InterruptedException {
+        // Execute "who" command to get the logged-in users on Unix-based systems
+        executeCommand("who", loggedInUsers);
+    }
+
+    /**
+     * Executes the specified system command and processes its output and error streams.
+     * The output of the command is processed to extract logged-in users and add them to the list.
+     * 
+     * @param command The system command to be executed.
+     * @param loggedInUsers A list to which the logged-in users will be added.
+     * @throws IOException If an I/O error occurs while executing the command.
+     * @throws InterruptedException If the process is interrupted while waiting.
+     */
+    private static void executeCommand(String command, List<String> loggedInUsers) throws IOException, InterruptedException {
+        // Execute the system command
+        Process process = Runtime.getRuntime().exec(command);
+
+        // Start threads to handle the output and error streams of the process
+        Thread outputThread = new Thread(() -> processOutput(loggedInUsers, process.getInputStream()));
+        Thread errorThread = new Thread(() -> processError(process.getErrorStream()));
+
+        // Start the threads
+        outputThread.start();
+        errorThread.start();
+
+        // Wait for the process to complete or timeout after 10 seconds
+        if (!process.waitFor(10, TimeUnit.SECONDS)) {
+            System.err.println("Process timed out!");
+            process.destroy();
+        }
+
+        // Wait for both threads to finish
+        outputThread.join();
+        errorThread.join();
+    }
+
+    /**
+     * Processes the output stream of the system command to extract logged-in users and add them to the list.
+     * 
+     * @param loggedInUsers A list to which the logged-in users will be added.
+     * @param inputStream The input stream of the system command's output.
+     */
+    private static void processOutput(List<String> loggedInUsers, InputStream inputStream) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String user = line.trim();  // Trim any whitespace
+                if (!user.isEmpty() && !user.equalsIgnoreCase("Console") && !loggedInUsers.contains(user)) {
+                    loggedInUsers.add(user);  // Add the user to the list if it's valid
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Processes the error stream of the system command and prints any error messages to the error stream.
+     * 
+     * @param errorStream The error stream of the system command.
+     */
+    private static void processError(InputStream errorStream) {
+        try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream))) {
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                System.err.println("Error: " + errorLine);  // Print any error lines
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+        public static void SystemNameFetcher(String fullComputerName) {
+            // Split the string at the backslash
+            String[] parts = fullComputerName.split("\\\\");
+            // The first part is the system name
+            String systemName = parts[0];
+            // Output the system name
+            System.out.println("System Name: " + systemName);
+        }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\WebActivityTrackingTracker.java ###
+package com.jh.wat;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class WebActivityTrackingTracker {
+
+    // Base path where the reports will be stored
+    private static final String BASE_PATH = getBasePathForSystem();
+
+    public static void main(String[] args) {
+        List<String> loggedInUsers = SystemUtils.getLoggedInUsers();
+        if (!loggedInUsers.isEmpty()) {
+            // For each logged-in user, process and generate their report
+            loggedInUsers.forEach(userName -> {
+                System.out.println("Processing user: " + userName);
+                generateVisitedSitesTimeTrackerRecord(userName);
+            });
+        }
+    }
+
+    private static void generateVisitedSitesTimeTrackerRecord(String userName) {
+        // Extract the actual username if domain is included (e.g., "DESKTOP-TCU61U2\\userName")
+        String onlyUserName = userName.contains("\\") ? userName.split("\\\\")[1] : userName;
+
+        // Generate a timestamp for the report file name
+        String timestamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        String folderCurrentDate = new SimpleDateFormat("ddMMMyyyy").format(new Date());
+
+        // Define the directory path to save the report
+        String path = BASE_PATH + folderCurrentDate + File.separator;
+        String jsonFileName = path + onlyUserName + "_" + timestamp + ".json";
+        String csvFileName = path + onlyUserName + "_" + timestamp + ".csv";
+
+        // Ensure the directory exists, or create it
+        FileUtils.ensureDirectoryExists(path);
+
+        // Create a JSON report with the user's basic details
+        JSONObject jsonReport = JsonUtils.createJsonReport(userName);
+
+
+
+        // Initialize the "Users" array in the JSON object
+        JSONArray usersArray = new JSONArray();
+        JSONObject userObject = new JSONObject();
+        userObject.put("userName", onlyUserName); // Add the user name without domain
+        usersArray.put(userObject);
+
+        // Add the "Users" array to the JSON report
+        jsonReport.put("Users", usersArray);
+
+        // Get the list of installed browsers
+        List<String> installedBrowsers = BrowserUtils.getInstalledBrowsers();
+        JSONArray browsersArray = new JSONArray();
+        List<String[]> csvData = new ArrayList<>();
+
+        // Add CSV header
+        csvData.add(new String[]{"User Name", "Browser Name", "Title", "URL", "Visited Time", "Total Time Spent (m)"});
+
+        // For each installed browser, gather visited sites data
+        installedBrowsers.forEach(browser -> {
+            JSONObject browserData = new JSONObject();
+            browserData.put("browserName", browser);
+
+            // Get visited sites for the current browser and user
+            JSONArray visitedSitesArray = BrowserUtils.getVisitedSitesForBrowser(browser, userName);
+
+            visitedSitesArray.forEach(site -> {
+                JSONObject siteJson = (JSONObject) site;
+                String[] csvRow = new String[]{
+                        onlyUserName,  // Add the user name to the CSV
+                        browser,
+                        siteJson.optString("title"),
+                        siteJson.optString("url"),
+                        siteJson.optString("visitedTime"),
+                        String.valueOf(siteJson.optDouble("totalTimeSpentInMinutes"))
+                };
+                csvData.add(csvRow);
+            });
+
+            browserData.put("visitedSites", visitedSitesArray);
+            browsersArray.put(browserData);
+        });
+
+        // Add the browsers' data to the user's JSON inside the Users array
+        userObject.put("browsers", browsersArray);
+
+        // Write the JSON report to the specified file
+        FileUtils.writeJsonToFile(jsonFileName, jsonReport);
+        FileUtils.writeCsvToFile(csvFileName, csvData);
+
+        // Send the report via email (commented out the Gmail function, using Outlook instead)
+        GmailUtils.sendGmailWithAttachment(csvFileName, NetworkUtils.getSystemName());
+//        OutlookUtils.sendOutlookWithAttachment(csvFileName, NetworkUtils.getSystemName());
+    }
+
+    /**
+     * This method retrieves the base path for saving the reports based on the user's home directory.
+     * It constructs the path: user.home/Documents/BrowserHistoryReports/
+     *
+     * @return The base path for saving reports.
+     */
+    private static String getBasePathForSystem() {
+        return System.getProperty("user.home") + File.separator + "Documents" + File.separator + "WebActivityTrackingTool" + File.separator;
+    }
+}
+
+### Contents of D:\workspace\web-activity-tacking-tool\src\main\java\com\jh\wat\WebActivityTrackingTracker_01_Working.java ###
+package com.jh.wat;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * This class generates a time tracker report for visited websites from multiple browsers for each logged-in user.
+ * It creates a JSON report that contains information about the user, their IP address, and their visited sites data.
+ */
+public class WebActivityTrackingTracker_01_Working {
+
+    // Base path where the reports will be stored, dynamically retrieved for the current system
+    private static final String BASE_PATH = getBasePathForSystem();
+
+    /**
+     * Main entry point of the program that processes all logged-in users to generate visited sites time tracker reports.
+     * It retrieves the list of logged-in users and calls the method to generate the report for each user.
+     *
+     * @param args Command-line arguments (not used in this case).
+     */
+    public static void main(String[] args) {
+        List<String> loggedInUsers = SystemUtils.getLoggedInUsers();
+        if (!loggedInUsers.isEmpty()) {
+            // For each logged-in user, process and generate their report
+            loggedInUsers.forEach(userName -> {
+                System.out.println("Processing user: " + userName);
+                generateVisitedSitesTimeTrackerRecord(userName);
+            });
+        }
+    }
+
+    /**
+     * This method generates the visited sites time tracker record for a given user.
+     * It creates a JSON report containing information about the user's visited sites from various browsers.
+     * The report is stored in the user's Documents directory under a folder named 'BrowserHistoryReports'.
+     *
+     * @param userName The username for which the visited sites time tracker report will be generated.
+     */
+    private static void generateVisitedSitesTimeTrackerRecord(String userName) {
+        // Extract the actual username if domain is included (e.g., "domain\\userName")
+        String onlyUserName = userName.contains("\\") ? userName.split("\\\\")[1] : userName;
+        // Generate a timestamp for the report file name
+        String timestamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        String folderCurrentDate = new SimpleDateFormat("ddMMMyyyy").format(new Date());
+        // Define the directory path to save the report
+        String path = BASE_PATH + folderCurrentDate + File.separator;
+        String jsonFileName = path + onlyUserName + "_" + timestamp + ".json";
+        String csvFileName = path + onlyUserName + "_" + timestamp + ".csv";
+
+        // Ensure the directory exists, or create it
+        FileUtils.ensureDirectoryExists(path);
+
+        // Create a JSON report with the user's basic details
+        JSONObject jsonReport = JsonUtils_01_Working.createJsonReport(userName);
+        jsonReport.put("ipaddress", NetworkUtils.getSystemIpAddress());
+
+        // Get the list of installed browsers
+        List<String> installedBrowsers = BrowserUtils.getInstalledBrowsers();
+        JSONArray browsersArray = new JSONArray();
+        List<String[]> csvData = new ArrayList<>();
+
+        // Add CSV header
+        csvData.add(new String[]{"Browser Name", "Title", "URL", "Visited Time", "Total Time Spent (m)"});
+
+        // For each installed browser, gather visited sites data
+        installedBrowsers.forEach(browser -> {
+            JSONObject browserData = new JSONObject();
+            browserData.put("browserName", browser);
+            JSONArray visitedSitesArray = BrowserUtils.getVisitedSitesForBrowser(browser, userName);
+
+            visitedSitesArray.forEach(site -> {
+                JSONObject siteJson = (JSONObject) site;
+                String[] csvRow = new String[]{
+                        browser,
+                        siteJson.optString("title"),
+                        siteJson.optString("url"),
+                        siteJson.optString("visitedTime"),
+//                        String.valueOf(siteJson.optDouble("totalTimeSpentInSeconds")),
+                        String.valueOf(siteJson.optDouble("totalTimeSpentInMinutes"))
+                };
+                csvData.add(csvRow);
+            });
+
+            browserData.put("visitedSites", visitedSitesArray);
+            browsersArray.put(browserData);
+        });
+
+        // Add the browsers' data to the JSON report
+        jsonReport.put("browsers", browsersArray);
+
+        // Write the JSON report to the specified file
+        FileUtils.writeJsonToFile(jsonFileName, jsonReport);
+        FileUtils.writeCsvToFile(csvFileName, csvData);
+
+        // Send the report via email (commented out the Gmail function, using Outlook instead)
+        GmailUtils.sendGmailWithAttachment(csvFileName, userName);
+//        OutlookUtils.sendOutlookWithAttachment(jsonFileName, userName);
+    }
+
+    /**
+     * This method retrieves the base path for saving the reports based on the user's home directory.
+     * It constructs the path: user.home/Documents/BrowserHistoryReports/
+     *
+     * @return The base path for saving reports.
+     */
+    private static String getBasePathForSystem() {
+        return System.getProperty("user.home") + File.separator + "Documents" + File.separator + "WebActivityTrackingTool" + File.separator;
+    }
+}
+

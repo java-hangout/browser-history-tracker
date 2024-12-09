@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.jh.iht.java.basics</groupId>
-  <artifactId>browser-history-tracker</artifactId>
+  <artifactId>web-activity-tracker-tool</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 

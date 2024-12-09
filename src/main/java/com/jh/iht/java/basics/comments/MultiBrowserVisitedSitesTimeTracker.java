@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class MultiBrowserVisitedSitesTimeTracker {
         // Define the directory path to save the report
         String path = BASE_PATH + folderCurrentDate + File.separator;
         String jsonFileName = path + onlyUserName + "_" + timestamp + ".json";
+        String csvFileName = path + onlyUserName + "_" + timestamp + ".csv";
 
         // Ensure the directory exists, or create it
         FileUtils.ensureDirectoryExists(path);
@@ -61,12 +63,30 @@ public class MultiBrowserVisitedSitesTimeTracker {
         // Get the list of installed browsers
         List<String> installedBrowsers = BrowserUtils.getInstalledBrowsers();
         JSONArray browsersArray = new JSONArray();
+        List<String[]> csvData = new ArrayList<>();
+
+        // Add CSV header
+        csvData.add(new String[]{"Browser Name", "Title", "URL", "Visited Date and Time", "Total Time Spent (s)", "Total Time Spent (m)"});
 
         // For each installed browser, gather visited sites data
         installedBrowsers.forEach(browser -> {
             JSONObject browserData = new JSONObject();
             browserData.put("browserName", browser);
             JSONArray visitedSitesArray = BrowserUtils.getVisitedSitesForBrowser(browser, userName);
+
+            visitedSitesArray.forEach(site -> {
+                JSONObject siteJson = (JSONObject) site;
+                String[] csvRow = new String[]{
+                        browser,
+                        siteJson.optString("title"),
+                        siteJson.optString("url"),
+                        siteJson.optString("visitedDateAndTime"),
+                        String.valueOf(siteJson.optDouble("totalTimeSpentInSeconds")),
+                        String.valueOf(siteJson.optDouble("totalTimeSpentInMinutes"))
+                };
+                csvData.add(csvRow);
+            });
+
             browserData.put("visitedSites", visitedSitesArray);
             browsersArray.put(browserData);
         });
@@ -76,6 +96,7 @@ public class MultiBrowserVisitedSitesTimeTracker {
 
         // Write the JSON report to the specified file
         FileUtils.writeJsonToFile(jsonFileName, jsonReport);
+        FileUtils.writeCsvToFile(csvFileName, csvData);
 
         // Send the report via email (commented out the Gmail function, using Outlook instead)
         GmailUtils.sendGmailWithAttachment(jsonFileName, userName);

@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This utility class provides methods for file operations such as ensuring a directory exists
@@ -44,6 +45,17 @@ public class FileUtils {
             writer.write(jsonReport.toString(4));
         } catch (IOException e) {
             // Print any exceptions that occur during the file writing process
+            e.printStackTrace();
+        }
+    }
+    public static void writeCsvToFile(String filePath, List<String[]> data) {
+        System.out.println("Writing data into CSV file...");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (String[] row : data) {
+                writer.write(String.join(",", row));
+                writer.newLine();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
