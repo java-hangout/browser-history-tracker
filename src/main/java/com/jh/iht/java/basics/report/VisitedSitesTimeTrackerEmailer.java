@@ -162,7 +162,7 @@ public class VisitedSitesTimeTrackerEmailer {
 
         // Authenticate the sender's email
         String username = "contacts.veereshn@gmail.com";  // Your Gmail address
-        String password = "wkgs wpis zykx zauw";  // Your Gmail password
+        String password = "**********";  // Your Gmail password
 
         Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
